@@ -1,28 +1,91 @@
-import { useAuthContext } from "../../context/AuthContext";
-import { extractTime } from "../../utils/extractTime";
-import useConversation from "../../zustand/useConversation";
+import { Avatar, Box, Flex, Image, Skeleton, Text } from "@chakra-ui/react";
+import { selectedConversationAtom } from "../atoms/messagesAtom";
+import { useRecoilValue } from "recoil";
+import userAtom from "../atoms/userAtom";
+import { BsCheck2All } from "react-icons/bs";
+import { useState } from "react";
 
-const Message = ({ message }) => {
-	const { authUser } = useAuthContext();
-	const { selectedConversation } = useConversation();
-	const fromMe = message.senderId === authUser._id;
-	const formattedTime = extractTime(message.createdAt);
-	const chatClassName = fromMe ? "chat-end" : "chat-start";
-	const profilePic = fromMe ? authUser.profilePic : selectedConversation?.profilePic;
-	const bubbleBgColor = fromMe ? "bg-blue-500" : "";
-
-	const shakeClass = message.shouldShake ? "shake" : "";
-
+const Message = ({ ownMessage, message }) => {
+	const selectedConversation = useRecoilValue(selectedConversationAtom);
+	const user = useRecoilValue(userAtom);
+	const [imgLoaded, setImgLoaded] = useState(false);
 	return (
-		<div className={`chat ${chatClassName}`}>
-			<div className='chat-image avatar'>
-				<div className='w-10 rounded-full'>
-					<img alt='Tailwind CSS chat bubble component' src={profilePic} />
-				</div>
-			</div>
-			<div className={`chat-bubble text-white ${bubbleBgColor} ${shakeClass} pb-2`}>{message.message}</div>
-			<div className='chat-footer opacity-50 text-xs flex gap-1 items-center'>{formattedTime}</div>
-		</div>
+		<>
+			{ownMessage ? (
+				<Flex gap={2} alignSelf={"flex-end"}>
+					{message.text && (
+						<Flex bg={"green.800"} maxW={"350px"} p={1} borderRadius={"md"}>
+							<Text color={"white"}>{message.text}</Text>
+							<Box
+								alignSelf={"flex-end"}
+								ml={1}
+								color={message.seen ? "blue.400" : ""}
+								fontWeight={"bold"}
+							>
+								<BsCheck2All size={16} />
+							</Box>
+						</Flex>
+					)}
+					{message.img && !imgLoaded && (
+						<Flex mt={5} w={"200px"}>
+							<Image
+								src={message.img}
+								hidden
+								onLoad={() => setImgLoaded(true)}
+								alt='Message image'
+								borderRadius={4}
+							/>
+							<Skeleton w={"200px"} h={"200px"} />
+						</Flex>
+					)}
+
+					{message.img && imgLoaded && (
+						<Flex mt={5} w={"200px"}>
+							<Image src={message.img} alt='Message image' borderRadius={4} />
+							<Box
+								alignSelf={"flex-end"}
+								ml={1}
+								color={message.seen ? "blue.400" : ""}
+								fontWeight={"bold"}
+							>
+								<BsCheck2All size={16} />
+							</Box>
+						</Flex>
+					)}
+
+					<Avatar src={user.profilePic} w='7' h={7} />
+				</Flex>
+			) : (
+				<Flex gap={2}>
+					<Avatar src={selectedConversation.userProfilePic} w='7' h={7} />
+
+					{message.text && (
+						<Text maxW={"350px"} bg={"gray.400"} p={1} borderRadius={"md"} color={"black"}>
+							{message.text}
+						</Text>
+					)}
+					{message.img && !imgLoaded && (
+						<Flex mt={5} w={"200px"}>
+							<Image
+								src={message.img}
+								hidden
+								onLoad={() => setImgLoaded(true)}
+								alt='Message image'
+								borderRadius={4}
+							/>
+							<Skeleton w={"200px"} h={"200px"} />
+						</Flex>
+					)}
+
+					{message.img && imgLoaded && (
+						<Flex mt={5} w={"200px"}>
+							<Image src={message.img} alt='Message image' borderRadius={4} />
+						</Flex>
+					)}
+				</Flex>
+			)}
+		</>
 	);
 };
+
 export default Message;
