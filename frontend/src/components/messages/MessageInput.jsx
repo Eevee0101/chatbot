@@ -12,7 +12,7 @@ import {
 	ModalOverlay,
 	Spinner,
 	useDisclosure,
-} from "@chakra-ui/react";
+};
 import { useRef, useState } from "react";
 import { IoSendSharp } from "react-icons/io5";
 import useShowToast from "../hooks/useShowToast";
